@@ -3,13 +3,20 @@ using UnityEngine;
 namespace World
 {
 
+    /*
+     * A terrain section is a large chunk of the world, something like 200x200 meters.
+     */
     public class TerrainSection
     {
         public const int VerticesPerSquare = 6;
 
+        // These arrays are needed because the mesh's vertices cannot be modified directly, i.e
+        // you can't do terrainSection.mesh.vertices[idx].y = y
         public Vector3[] vertices;
-        public int[] triangles;
         public Vector2[] uvs;
+        public int[] triangles;
+        
+        public Mesh mesh;
 
         private int xSize;
         private int zSize;
@@ -20,6 +27,10 @@ namespace World
             this.xSize = xSize;
             this.zSize = zSize;
             this.worldPosition = worldPosition;
+
+            mesh = new Mesh();
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.Clear();
         }
 
         public int XSize
@@ -29,6 +40,16 @@ namespace World
         public int ZSize
         {
             get { return zSize; }
+        }
+
+        /// <summary>
+        /// Updates this section's mesh by setting the values from the public vertices, uvs, and triangles arrays.
+        /// </summary>
+        public void UpdateMesh()
+        {
+            mesh.vertices = vertices;
+            mesh.uv = uvs;
+            mesh.triangles = triangles;
         }
 
         public Vector3 GetSquareCoords(int x, int z)
@@ -45,11 +66,11 @@ namespace World
         }
 
 
-        public bool OffLimits(int x, int z) 
+        public bool OffLimits(int x, int z)
         {
             return (x >= xSize / 2 - 10 && x <= xSize / 2 + 10) && (z >= zSize / 2 - 10 && z <= zSize / 2 + 10);
         }
-        
+
 
         private int Square2VertexOffset(int x, int z)
         {
